@@ -1456,21 +1456,36 @@ vec3 applyCompositePostFilter(vec2 uv, bool topScreen)
     return sampleCompositeRgb(uv, topScreen);
 }
 
+vec2 lcdPixelIntegral(vec2 stepSize)
+{
+    // Exact box-filter response for a sinusoidal aperture over one physical
+    // display pixel. The small-argument limit avoids division by zero.
+    vec2 x = 3.141592654 * stepSize;
+    return mix(sin(x) / max(abs(x),vec2(0.00001)), vec2(1.0),
+               lessThan(abs(x),vec2(0.00001)));
+}
+
 vec3 applyDsLcdGrid(vec3 color, vec2 uv, bool topScreen)
 {
     if (pushConstants.lcdGridStrength == 0u) return color;
-    // One cell per native DS pixel, independent of 3D rendering resolution.
-    // Analytic coverage keeps fractional scaling from making the grid crawl.
+    // Smooth pixel-aperture model referenced from libretro lcd1x_nds
+    // (jdgleaver, GPL-2.0-or-later; based on Gigaherz's public-domain lcd3x).
+    // The -cos phase puts gaps BETWEEN native pixels. Integrating the aperture
+    // over each display pixel removes the high harmonics responsible for the
+    // previous thin-line mask's alternating weights and broad moire bands.
+    // Keep the existing artwork/gamut; only apply the LCD aperture here.
     vec2 cell = screenLocalCoord(uv, topScreen) * vec2(256.0,192.0);
-    vec2 footprint = max(fwidth(cell),vec2(0.0001));
-    vec2 phase = fract(cell);
-    vec2 distance = min(phase,1.0-phase);
-    vec2 lines = 1.0-smoothstep(vec2(0.05)-footprint*0.5,
-                              vec2(0.05)+footprint*0.5,distance);
-    float visibility = 1.0-smoothstep(0.4,0.8,max(footprint.x,footprint.y));
-    float strength = pushConstants.lcdGridStrength == 1u ? 0.16
-        : (pushConstants.lcdGridStrength == 2u ? 0.27 : 0.40);
-    return color*(1.0-strength*max(lines.x,lines.y)*visibility);
+    vec2 stepX = abs(dFdx(cell)), stepY = abs(dFdy(cell));
+    vec2 aperture = cos(6.283185307 * cell)
+        * lcdPixelIntegral(stepX) * lcdPixelIntegral(stepY);
+    vec2 frequency = max(stepX,stepY);
+    // Fade BEFORE Nyquist, rather than allowing an unresolved mask to alias
+    // into stripes in small/fractionally scaled screen layouts.
+    float visibility = 1.0-smoothstep(0.38,0.5,max(frequency.x,frequency.y));
+    vec2 depth = pushConstants.lcdGridStrength == 1u ? vec2(0.07,0.05)
+        : (pushConstants.lcdGridStrength == 2u ? vec2(0.12,0.08) : vec2(0.20,0.14));
+    vec2 transmission = 1.0-depth*visibility*0.5*(1.0+aperture);
+    return color*transmission.x*transmission.y;
 }
 
 void main()

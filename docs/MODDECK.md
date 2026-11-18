@@ -23,8 +23,11 @@ point. Raising it further does not improve native-resolution 2D assets.
 **Video → DS LCD grid** independently selects Off, Subtle, Medium or Strong.
 It overlays a 256×192-cell LCD pattern after the selected built-in Vulkan
 filter, including over high-resolution 3D. Grid spacing follows each DS screen,
-not the phone's resolution or the 3D resolution setting. Analytic line coverage
-handles fractional scaling; the grid fades when a screen is too small to
+not the phone's resolution or the 3D resolution setting. The smooth aperture
+follows [libretro's NDS LCD1x model](https://github.com/libretro/slang-shaders/blob/master/handheld/shaders/lcd1x_nds.slang),
+without its colour correction. Each aperture is integrated across the physical
+display-pixel footprint. The mask fades before the Nyquist limit instead of
+aliasing into broad bands when fractional scaling is used. It fades when a screen is too small to
 resolve it cleanly. Android controls and menus are not filtered. Off preserves
 the previous output. The option defaults to Off and does not add a GPU pass
 or a buffered frame. RetroArch presets keep their own display effects.
