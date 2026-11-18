@@ -17,6 +17,10 @@ data class LibrashaderAbiTarget(
     val clangPrefix: String,
 )
 
+val requestedAndroidAbis = providers.gradleProperty("androidAbis").orNull
+    ?.split(",")?.map(String::trim)?.filter(String::isNotEmpty)
+    ?: listOf("armeabi-v7a", "arm64-v8a", "x86_64")
+
 android {
     testBuildType = "release"
 
@@ -32,9 +36,9 @@ android {
 
     namespace = "me.magnum.melonds"
     compileSdk = AppConfig.compileSdkVersion
-    ndkVersion = AppConfig.ndkVersion
+    ndkVersion = providers.gradleProperty("androidNdkVersion").getOrElse(AppConfig.ndkVersion)
     defaultConfig {
-        applicationId = "me.magnum.melondualds"
+        applicationId = "me.magnum.melondualds.moddeck"
         minSdk = AppConfig.minSdkVersion
         targetSdk = AppConfig.targetSdkVersion
         versionCode = AppConfig.versionCode
@@ -42,11 +46,14 @@ android {
         manifestPlaceholders["appName"] = "@string/app_name"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {
-            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
+            abiFilters.addAll(requestedAndroidAbis)
         }
         externalNativeBuild {
             cmake {
                 cppFlags("-std=c++17 -Wno-write-strings")
+                providers.gradleProperty("nativeJobs").orNull?.let { jobs ->
+                    arguments("-DCMAKE_JOB_POOLS=compile=$jobs", "-DCMAKE_JOB_POOL_COMPILE=compile")
+                }
             }
         }
         vectorDrawables.useSupportLibrary = true
@@ -140,6 +147,7 @@ androidComponents {
 }
 
 val vulkanShaderSources = listOf(
+    rootProject.file("app/src/main/cpp/renderer/Vulkan2DFilter.glsl"),
     rootProject.file("melonDS-android-lib/src/GPU3D_Vulkan_InterpSpansShader.comp"),
     rootProject.file("melonDS-android-lib/src/GPU3D_Vulkan_BinCombinedShader.comp"),
     rootProject.file("melonDS-android-lib/src/GPU3D_Vulkan_CalculateWorkOffsetsShader.comp"),
@@ -248,7 +256,7 @@ val librashaderAbiTargets = listOf(
         ndkLibTriple = "x86_64-linux-android",
         clangPrefix = "x86_64-linux-android",
     ),
-)
+).filter { it.abi in requestedAndroidAbis }
 
 fun librashaderToolSearchDirs(): List<File> {
     val pathDirs = System.getenv("PATH")
@@ -356,6 +364,7 @@ fun androidNdkHostTag(): String {
 }
 
 val isWindowsHost = System.getProperty("os.name").lowercase().contains("windows")
+val librashaderRustToolchain = providers.gradleProperty("rustToolchain").getOrElse("stable")
 
 fun rustTargetEnvKey(rustTarget: String): String {
     return rustTarget.uppercase().replace("-", "_")
@@ -428,7 +437,7 @@ val copyLibrashaderAbiArtifacts = librashaderAbiTargets.map { abiTarget ->
         description = "Installs Rust target ${abiTarget.rustTarget} for librashader."
         dependsOn(prepareLibrashaderSource)
 
-        commandLine(resolveBuildTool("rustup"), "target", "add", abiTarget.rustTarget)
+        commandLine(resolveBuildTool("rustup"), "target", "add", "--toolchain", librashaderRustToolchain, abiTarget.rustTarget)
         environment("PATH", augmentedLibrashaderPath())
     }
     val compileLibrashader = tasks.register<Exec>("compileLibrashader${capitalizedAbi}") {
@@ -456,7 +465,7 @@ val copyLibrashaderAbiArtifacts = librashaderAbiTargets.map { abiTarget ->
         workingDir = librashaderSourceDir.get().asFile
         commandLine(
             resolveBuildTool("cargo"),
-            "+stable",
+            "+$librashaderRustToolchain",
             "build",
             "--package",
             "librashader-capi",

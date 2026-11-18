@@ -75,6 +75,10 @@
         <item>lcd</item>
         <item>scanlines</item>
         <item>retroarch</item>
+            <item>xbr2d50pixel</item>
+        <item>xbr2d100pixel</item>
+        <item>xbr2d50</item>
+        <item>xbr2d100</item>
     </string-array>
 
     <string-array name="video_vulkan_driver_mode_values">

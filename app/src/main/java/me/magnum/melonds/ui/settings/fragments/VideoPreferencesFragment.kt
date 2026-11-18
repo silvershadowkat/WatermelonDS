@@ -395,10 +395,6 @@ class VideoPreferencesFragment : BasePreferenceFragment(), PreferenceFragmentTit
         launchedInGame: Boolean,
     ) {
         modePreference.isPersistent = false
-        modePreference.setOnPreferenceClickListener {
-            showVulkanDriverSelectionDialog(modePreference, removePreference)
-            true
-        }
 
         importPreference.setOnPreferenceClickListener {
             vulkanDriverImportLauncher.launch(
@@ -562,6 +558,16 @@ class VideoPreferencesFragment : BasePreferenceFragment(), PreferenceFragmentTit
     }
 
     override fun onDisplayPreferenceDialog(preference: Preference) {
+        if (preference.key == "video_vulkan_driver_mode") {
+            // ListPreference already dispatches here from onClick. Opening
+            // another dialog in OnPreferenceClickListener stacks two dialogs
+            // and lets a selection change only the nonpersistent UI value.
+            showVulkanDriverSelectionDialog(
+                preference as ListPreference,
+                findPreference<Preference>("video_vulkan_driver_remove")!!,
+            )
+            return
+        }
         if (preference.key == "video_retroarch_shader_preset") {
             showRetroArchPresetBrowserDialog(preference as ListPreference)
             return

@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">WatermelonDS</string>
+    <string name="app_name">WatermelonDS ModDeck</string>
 
     <string name="ok">OK</string>
     <string name="yes">Yes</string>
@@ -1001,6 +1001,10 @@
         <item>LCD</item>
         <item>Scanlines</item>
         <item>RetroArch (.slangp)</item>
+            <item>@string/filter_2d_xbr_50_pixel</item>
+        <item>@string/filter_2d_xbr_100_pixel</item>
+        <item>@string/filter_2d_xbr_50</item>
+        <item>@string/filter_2d_xbr_100</item>
     </string-array>
 
     <string-array name="video_vulkan_driver_mode_options">
@@ -1189,4 +1193,8 @@
     <string name="dsi_profile_make_default">Set as default</string>
     <string name="dsi_profile_missing">Profile unavailable</string>
     <string name="dsi_profile_remove_description">Remove this profile from settings? Its files will remain. Games assigned to it will need another profile before they can start.</string>
+    <string name="filter_2d_xbr_50_pixel" formatted="false">2D xBR 50% + pixel-aware</string>
+    <string name="filter_2d_xbr_100_pixel" formatted="false">2D xBR 100% + pixel-aware</string>
+    <string name="filter_2d_xbr_50" formatted="false">2D xBR 50%</string>
+    <string name="filter_2d_xbr_100" formatted="false">2D xBR 100%</string>
 </resources>

@@ -4015,7 +4015,7 @@ bool VulkanOutput::ensureFaithfulPipeline()
     if (vkCreateDescriptorSetLayout(device, &li, nullptr, &faithfulSetLayout) != VK_SUCCESS) return false;
     VkPushConstantRange pcr{};
     pcr.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-    pcr.offset = 0; pcr.size = 12;
+    pcr.offset = 0; pcr.size = 16;
     VkPipelineLayoutCreateInfo pli{};
     pli.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pli.setLayoutCount = 1; pli.pSetLayouts = &faithfulSetLayout;
@@ -6179,6 +6179,9 @@ bool VulkanOutput::dispatchFaithfulCompositor(Frame* frame, FrameResource& resou
 
     vkCmdBindDescriptorSets(resource.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
                             faithfulPipeLayout, 0, 1, &faithfulDescSet[faithfulRing], 0, nullptr);
+    const u32 tag2DFilter = inputs != nullptr && IsVulkan2DOnlyFilter(inputs->filtering) ? 1u : 0u;
+    vkCmdPushConstants(resource.commandBuffer, faithfulPipeLayout,
+                       VK_SHADER_STAGE_COMPUTE_BIT, 12u, sizeof(tag2DFilter), &tag2DFilter);
     VkBufferMemoryBarrier bObj{};
     bObj.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
     bObj.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
@@ -7101,6 +7104,9 @@ bool VulkanOutput::composeFaithfulDebug(melonDS::GPU& gpu, u32* out)
                             0, 1, &faithfulDescSet[faithfulRing], 0, nullptr);
 
     const u32 empujeEspA[3] = {2u, 1u, 0u};
+    const u32 no2DFilterTag = 0u;
+    vkCmdPushConstants(cb, faithfulPipeLayout, VK_SHADER_STAGE_COMPUTE_BIT,
+                       12u, sizeof(no2DFilterTag), &no2DFilterTag);
     vkCmdPushConstants(cb, faithfulPipeLayout, VK_SHADER_STAGE_COMPUTE_BIT,
                        0, 12, empujeEspA);
     vkCmdDispatch(cb, 1u, 384u, 1u);

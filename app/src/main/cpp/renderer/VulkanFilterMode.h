@@ -17,7 +17,17 @@ enum class VulkanFilterMode : melonDS::u32
     Lcd = 6,
     Scanlines = 7,
     RetroArch = 8,
+    Xbr2D50Pixel = 9,
+    Xbr2D100Pixel = 10,
+    Xbr2D50 = 11,
+    Xbr2D100 = 12,
 };
+
+inline bool IsVulkan2DOnlyFilter(VulkanFilterMode filter)
+{
+    return filter >= VulkanFilterMode::Xbr2D50Pixel
+        && filter <= VulkanFilterMode::Xbr2D100;
+}
 
 inline bool IsVulkanPostProcessFilter(VulkanFilterMode filter)
 {
@@ -27,7 +37,8 @@ inline bool IsVulkanPostProcessFilter(VulkanFilterMode filter)
         || filter == VulkanFilterMode::Quilez
         || filter == VulkanFilterMode::Lcd
         || filter == VulkanFilterMode::Scanlines
-        || filter == VulkanFilterMode::RetroArch;
+        || filter == VulkanFilterMode::RetroArch
+        || IsVulkan2DOnlyFilter(filter);
 }
 
 }

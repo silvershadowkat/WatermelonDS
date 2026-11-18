@@ -1,4 +1,5 @@
 #version 450
+#extension GL_GOOGLE_include_directive : require
 
 layout(set = 0, binding = 0) uniform sampler2D uTexture;
 layout(set = 0, binding = 1, rgba8) uniform readonly image2D u3dImage;
@@ -1433,8 +1434,12 @@ vec3 filterHq4x(vec2 uv, bool topScreen)
     return clamp((w1 * (i1 + i3) + w2 * (i2 + i4) + w3 * (s1 + s3) + w4 * (s2 + s4) + c) / (2.0 * (w1 + w2 + w3 + w4) + 1.0), 0.0, 1.0);
 }
 
+#include "Vulkan2DFilter.glsl"
+
 vec3 applyCompositePostFilter(vec2 uv, bool topScreen)
 {
+    if (pushConstants.filtering >= 9u && pushConstants.filtering <= 12u)
+        return apply2DOnlyFilter(uv, topScreen);
     if (pushConstants.filtering == kFilterQuilez)
         return filterQuilez(uv, topScreen);
     if (pushConstants.filtering == kFilterXbr2)

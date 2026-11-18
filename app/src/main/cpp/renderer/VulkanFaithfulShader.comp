@@ -24,6 +24,8 @@ layout(push_constant) uniform Empuje {
 
     uint mezcla;
 
+    uint tag2DFilter;
+
 } pc;
 
 layout(constant_id = 0) const uint kSpecializedOutputMode = 0xFFFFFFFFu;
@@ -1334,6 +1336,19 @@ const uint kB1Needs3d = (1u << 18u) | kB1Blend2dOver3d;
 const uint kB1Precomposed3d = 1u << 23u;
 const uint kB1Captured3dBackground = 1u << 24u;
 
+// Only the final display image of the opt-in 2D presets carries provenance
+// in alpha. It is opaque on presentation; capture products retain their real
+// alpha and every existing filter keeps the original image format/behaviour.
+// 128/255: certified 2D; 64/255: 3D or mixed; 255: untagged fallback.
+float filter2DAlpha(uint w0, uint resolvedLane)
+{
+    if (outputMode() != 1u || pc.tag2DFilter == 0u)
+        return 1.0;
+    bool captured = (w0 & (kB1Captured3dBackground | (1u << 20u))) != 0u;
+    return !captured && (resolvedLane == 0u || resolvedLane == 3u)
+        ? 128.0 / 255.0 : 64.0 / 255.0;
+}
+
 ivec3 composePrecomposed3d(uint operand, ivec3 color3d, uint alpha3d)
 {
     ivec3 color2d = ivec3(int(operand & 0x3Fu),
@@ -1560,7 +1575,7 @@ void storeFinalSubpixel(
                : ivec3(0, 0, 63);
     imageStore(outImage, ivec2(int(outputX), int(outputY)),
         vec4(float(a8(colorF.b)) / 255.0, float(a8(colorF.g)) / 255.0,
-             float(a8(colorF.r)) / 255.0, 1.0));
+             float(a8(colorF.r)) / 255.0, filter2DAlpha(w0, carrilSonda)));
 }
 
 void runFinalNativeCell()
@@ -2247,7 +2262,7 @@ void main()
                    : ivec3(0, 0, 63);
         imageStore(outImage, ivec2(int(xSalida), int(filaSalida)),
             vec4(float(a8(colorF.b)) / 255.0, float(a8(colorF.g)) / 255.0,
-                 float(a8(colorF.r)) / 255.0, 1.0));
+                 float(a8(colorF.r)) / 255.0, filter2DAlpha(w0, carrilSonda)));
         return;
     }
 
@@ -3043,9 +3058,14 @@ void main()
 
     if (((pc.escala >> 14u) & 3u) == 3u)
         color = ivec3(63, 0, 0);
+    // The native-scale path keeps its original RGB arithmetic. B1 supplies
+    // a conservative lineage tag instead of re-running a different renderer.
+    uint filterFlags = outputMode() == 1u
+        ? fielB1[((eng * 192u + linea) * 256u + x) * 2u] : 0u;
+    uint filterLane = (filterFlags & (kB1Needs3d | kB1Precomposed3d)) != 0u ? 2u : 0u;
     imageStore(outImage, ivec2(int(xSalida), int(filaSalida)),
         vec4(float(a8(color.b)) / 255.0,
              float(a8(color.g)) / 255.0,
              float(a8(color.r)) / 255.0,
-             1.0));
+             filter2DAlpha(filterFlags, filterLane)));
 }

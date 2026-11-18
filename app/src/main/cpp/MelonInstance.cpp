@@ -1525,8 +1525,10 @@ bool CopyCompositedFrameToScreenshot(
 
         for (int x = 0; x < kScreenshotScreenWidth; x++)
         {
-            destinationTopLine[x] = sourceTopLine[x * scale + centerOffset];
-            destinationBottomLine[x] = sourceBottomLine[x * scale + centerOffset];
+            // The 2D-only presets use display-image alpha for provenance.
+            // DS screenshots/thumbnails remain ordinary opaque pictures.
+            destinationTopLine[x] = sourceTopLine[x * scale + centerOffset] | 0xFF000000u;
+            destinationBottomLine[x] = sourceBottomLine[x * scale + centerOffset] | 0xFF000000u;
         }
     }
 

@@ -114,9 +114,20 @@ class DefaultLayoutProvider(
 
         var screenWidth = safeWidth
         var screenHeight = (safeWidth / consoleAspectRatio).toInt()
+        // Keep stylus input and the controller in disjoint areas. The S26's
+        // portrait aspect fits two full-width screens; shorter displays only
+        // reduce the screen size when required to fit the controls below.
+        val screenCount = if (singleScreenComponent == null) 2 else 1
+        val thumbInset = screenUnitsConverter.dpToPixels(24f).toInt()
+        val controlHeight = largeButtonsSize + lrButtonsSize + thumbInset
+        val availableScreenHeight = ((safeHeight - controlHeight).coerceAtLeast(screenCount) / screenCount)
+        if (screenHeight > availableScreenHeight) {
+            screenHeight = availableScreenHeight
+            screenWidth = (screenHeight * consoleAspectRatio).roundToInt()
+        }
 
         val screenComponents = if (singleScreenComponent == null) {
-            var screenMargin = 0
+            var screenMargin = (safeWidth - screenWidth) / 2
             if (screenHeight * 2 > safeHeight) {
                 screenWidth = (safeHeight / 2 * consoleAspectRatio).toInt()
                 screenHeight = safeHeight / 2
@@ -132,7 +143,7 @@ class DefaultLayoutProvider(
             )
         } else {
             // Align screen to the top of the safe area
-            val screenArea = Rect(safeLeft, safeTop, screenWidth, screenHeight)
+            val screenArea = Rect(safeLeft + (safeWidth - screenWidth) / 2, safeTop, screenWidth, screenHeight)
             arrayOf(PositionedLayoutComponent(screenArea, singleScreenComponent))
         }
 
@@ -144,8 +155,8 @@ class DefaultLayoutProvider(
             screensBottom
         }
 
-        val dpadView = Rect(safeLeft, height - safeBottom - largeButtonsSize, largeButtonsSize, largeButtonsSize)
-        val buttonsView = Rect(width - safeRight - largeButtonsSize, height - safeBottom - largeButtonsSize, largeButtonsSize, largeButtonsSize)
+        val dpadView = Rect(safeLeft + thumbInset, height - safeBottom - thumbInset - largeButtonsSize, largeButtonsSize, largeButtonsSize)
+        val buttonsView = Rect(width - safeRight - thumbInset - largeButtonsSize, height - safeBottom - thumbInset - largeButtonsSize, largeButtonsSize, largeButtonsSize)
 
         return ScreenLayout(
             listOf(

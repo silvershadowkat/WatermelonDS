@@ -525,6 +525,10 @@
         <item>LCD</item>
         <item>Líneas de escaneo</item>
         <item>RetroArch (.slangp)</item>
+            <item>@string/filter_2d_xbr_50_pixel</item>
+        <item>@string/filter_2d_xbr_100_pixel</item>
+        <item>@string/filter_2d_xbr_50</item>
+        <item>@string/filter_2d_xbr_100</item>
     </string-array>
 
     <string-array name="video_vulkan_driver_mode_options">

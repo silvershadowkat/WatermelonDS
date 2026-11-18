@@ -51,6 +51,7 @@ set_target_properties(librashader PROPERTIES
 add_compile_definitions(MELONDS_HAS_LIBRASHADER=1)
 
 set(VULKAN_SHADER_SOURCES
+        "${ANDROID_CPP_DIR}/renderer/Vulkan2DFilter.glsl"
         "${CORE_LIB_DIR}/src/GPU3D_Vulkan_CaptureLineExportShader.comp"
         "${CORE_LIB_DIR}/src/GPU3D_Vulkan_GraphicsRasterShader.vert"
         "${CORE_LIB_DIR}/src/GPU3D_Vulkan_GraphicsRasterShader.frag"

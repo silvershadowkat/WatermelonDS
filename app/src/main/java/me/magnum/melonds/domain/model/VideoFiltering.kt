@@ -12,13 +12,17 @@ enum class VideoFiltering {
     QUILEZ,
     LCD,
     SCANLINES,
-    RETROARCH;
+    RETROARCH,
+    XBR2D50PIXEL,
+    XBR2D100PIXEL,
+    XBR2D50,
+    XBR2D100;
 
     fun isSupportedByVulkan(): Boolean {
         return true
     }
 
     fun isSupportedByOpenGlSurface(): Boolean {
-        return this != SCANLINES
+        return this != SCANLINES && ordinal < XBR2D50PIXEL.ordinal
     }
 }
