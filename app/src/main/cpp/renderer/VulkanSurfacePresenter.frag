@@ -46,6 +46,7 @@ layout(push_constant) uniform PresenterPushConstants
     uint bottomStructuredHandoffSuppress3d;
     float viewportWidth;
     float viewportHeight;
+    uint lcdGridStrength;
 } pushConstants;
 
 const uint kMetaFlagRegularCaptureUses3d = 1u << 21u;
@@ -1455,6 +1456,23 @@ vec3 applyCompositePostFilter(vec2 uv, bool topScreen)
     return sampleCompositeRgb(uv, topScreen);
 }
 
+vec3 applyDsLcdGrid(vec3 color, vec2 uv, bool topScreen)
+{
+    if (pushConstants.lcdGridStrength == 0u) return color;
+    // One cell per native DS pixel, independent of 3D rendering resolution.
+    // Analytic coverage keeps fractional scaling from making the grid crawl.
+    vec2 cell = screenLocalCoord(uv, topScreen) * vec2(256.0,192.0);
+    vec2 footprint = max(fwidth(cell),vec2(0.0001));
+    vec2 phase = fract(cell);
+    vec2 distance = min(phase,1.0-phase);
+    vec2 lines = 1.0-smoothstep(vec2(0.05)-footprint*0.5,
+                              vec2(0.05)+footprint*0.5,distance);
+    float visibility = 1.0-smoothstep(0.4,0.8,max(footprint.x,footprint.y));
+    float strength = pushConstants.lcdGridStrength == 1u ? 0.16
+        : (pushConstants.lcdGridStrength == 2u ? 0.27 : 0.40);
+    return color*(1.0-strength*max(lines.x,lines.y)*visibility);
+}
+
 void main()
 {
     if (pushConstants.drawMode == 0u)
@@ -1481,7 +1499,7 @@ void main()
     if (pushConstants.drawMode == 4u || pushConstants.drawMode == 5u)
     {
         bool topScreen = pushConstants.drawMode == 4u;
-        outColor = vec4(applyCompositePostFilter(fragUv, topScreen), fragAlpha);
+        outColor = vec4(applyDsLcdGrid(applyCompositePostFilter(fragUv, topScreen), fragUv, topScreen), fragAlpha);
         return;
     }
 

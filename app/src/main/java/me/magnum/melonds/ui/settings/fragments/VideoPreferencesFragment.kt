@@ -425,6 +425,7 @@ class VideoPreferencesFragment : BasePreferenceFragment(), PreferenceFragmentTit
 
     private fun updateVulkanDrsPreferenceState(renderer: VideoRenderer) {
         findPreference<PreferenceCategory>("video_vulkan_category")?.isVisible = renderer == VideoRenderer.VULKAN
+        findPreference<Preference>("video_ds_lcd_grid")?.isVisible = renderer == VideoRenderer.VULKAN
     }
 
     private fun updateVulkanDriverPreferenceState(

@@ -1,4 +1,9 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="ds_lcd_grid">DS LCD grid</string>
+    <string name="ds_lcd_grid_off">Off</string>
+    <string name="ds_lcd_grid_subtle">Subtle</string>
+    <string name="ds_lcd_grid_medium">Medium</string>
+    <string name="ds_lcd_grid_strong">Strong</string>
     <string name="app_name">WatermelonDS ModDeck</string>
 
     <string name="ok">OK</string>

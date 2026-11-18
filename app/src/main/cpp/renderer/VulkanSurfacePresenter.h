@@ -60,6 +60,7 @@ struct VulkanSurfaceConfig
     bool hybridOnTop = false;
     VulkanPresenterBackgroundMode backgroundMode = VulkanPresenterBackgroundMode::Stretch;
     VulkanFilterMode filtering = VulkanFilterMode::Nearest;
+    u32 lcdGridStrength = 0;
     bool retroShaderEnabled = false;
     std::string retroShaderPresetPath;
     RetroArchSourceResolution retroShaderSourceResolution = RetroArchSourceResolution::VulkanIr;

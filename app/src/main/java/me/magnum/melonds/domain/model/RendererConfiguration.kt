@@ -21,6 +21,7 @@ data class RendererConfiguration(
     val conservativeCoverageApplyClamp: Boolean,
     val debug3dClearMagenta: Boolean,
     val retroArchShader: RetroArchShaderConfiguration,
+    val lcdGridStrength: Int = 0,
 ) {
 
     val resolutionScaling get() = when (renderer) {

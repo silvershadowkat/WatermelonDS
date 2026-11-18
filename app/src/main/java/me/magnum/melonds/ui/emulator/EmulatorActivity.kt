@@ -2168,6 +2168,7 @@ class EmulatorActivity : AppCompatActivity() {
             hybridOnTop = hybridOnTop,
             backgroundMode = currentMainScreenBackground.mode,
             videoFiltering = rendererConfiguration.videoFiltering,
+            lcdGridStrength = rendererConfiguration.lcdGridStrength,
             retroShaderEnabled = rendererConfiguration.videoFiltering == VideoFiltering.RETROARCH,
             retroShaderPresetPath = rendererConfiguration.retroArchShader.presetPath,
             retroShaderSourceResolution = rendererConfiguration.retroArchShader.sourceResolution.name.lowercase(),

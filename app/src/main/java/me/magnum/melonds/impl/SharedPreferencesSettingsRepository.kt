@@ -263,7 +263,10 @@ class SharedPreferencesSettingsRepository(
         renderConfigurationFlow = combine(
             renderInputsFlow,
             observeRetroArchShaderConfiguration(),
-        ) { renderInputs, retroArchShader ->
+            getOrCreatePreferenceSharedFlow("video_ds_lcd_grid") {
+                preferences.getString("video_ds_lcd_grid", "0")?.toIntOrNull()?.coerceIn(0, 3) ?: 0
+            },
+        ) { renderInputs, retroArchShader, lcdGridStrength ->
             val effectiveFiltering = when {
                 renderInputs.core.renderer == VideoRenderer.VULKAN && !renderInputs.core.filtering.isSupportedByVulkan() -> VideoFiltering.NONE
                 renderInputs.core.renderer != VideoRenderer.VULKAN && !renderInputs.core.filtering.isSupportedByOpenGlSurface() -> VideoFiltering.NONE
@@ -291,6 +294,7 @@ class SharedPreferencesSettingsRepository(
                 renderInputs.coverageFix.applyClamp,
                 renderInputs.coverageFix.debugClearMagenta,
                 if (effectiveFiltering == VideoFiltering.RETROARCH) retroArchShader else EmptyRetroArchShaderConfiguration,
+                lcdGridStrength = lcdGridStrength,
             )
         }.conflate().shareIn(preferencesCoroutineScope, SharingStarted.Lazily, replay = 1)
     }

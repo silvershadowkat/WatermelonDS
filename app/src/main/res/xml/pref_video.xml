@@ -37,6 +37,15 @@
             android:entryValues="@array/video_filtering_values"
             android:defaultValue="none"/>
 
+    <ListPreference
+            android:key="video_ds_lcd_grid"
+            android:title="@string/ds_lcd_grid"
+            android:summary="%s"
+            app:iconSpaceReserved="false"
+            android:entries="@array/ds_lcd_grid_options"
+            android:entryValues="@array/ds_lcd_grid_values"
+            android:defaultValue="0" />
+
     <Preference
             android:key="video_retroarch_shader_source"
             android:title="@string/video_retroarch_shader_source_title"

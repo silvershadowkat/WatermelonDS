@@ -766,6 +766,7 @@ bool mapVulkanPresentationConfig(JNIEnv* env, jobject configObject, MelonDSAndro
     std::string retroShaderPresetPath;
     std::string retroShaderSourceResolution;
     int retroShaderPassCount = 0;
+    int lcdGridStrength = 0;
     bool result = callFloatGetter(env, configObject, "getTopAlpha", &topAlpha)
         && callFloatGetter(env, configObject, "getBottomAlpha", &bottomAlpha)
         && callBooleanGetter(env, configObject, "getTopOnTop", &topOnTop)
@@ -776,6 +777,7 @@ bool mapVulkanPresentationConfig(JNIEnv* env, jobject configObject, MelonDSAndro
         && callStringGetter(env, configObject, "getRetroShaderPresetPath", &retroShaderPresetPath)
         && callStringGetter(env, configObject, "getRetroShaderSourceResolution", &retroShaderSourceResolution)
         && callIntGetter(env, configObject, "getRetroShaderPassCount", &retroShaderPassCount)
+        && callIntGetter(env, configObject, "getLcdGridStrength", &lcdGridStrength)
         && callBooleanGetter(env, configObject, "getRetroShaderClearHistory", &retroShaderClearHistory);
 
     configOut->topAlpha = topAlpha;
@@ -832,6 +834,7 @@ bool mapVulkanPresentationConfig(JNIEnv* env, jobject configObject, MelonDSAndro
     }
 
     configOut->filtering = mapVulkanFilterMode(filteringOrdinal);
+    configOut->lcdGridStrength = static_cast<melonDS::u32>(std::clamp(lcdGridStrength, 0, 3));
     if (!configOut->retroShaderEnabled || configOut->retroShaderPresetPath.empty())
         configOut->filtering = configOut->filtering == MelonDSAndroid::VulkanFilterMode::RetroArch
             ? MelonDSAndroid::VulkanFilterMode::Nearest

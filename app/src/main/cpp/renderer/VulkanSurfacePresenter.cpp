@@ -202,9 +202,10 @@ struct ComposedPresenterPushConstants
     u32 bottomStructuredHandoffSuppress3d;
     float viewportWidth;
     float viewportHeight;
+    u32 lcdGridStrength;
 };
 
-static_assert(sizeof(ComposedPresenterPushConstants) == 92u);
+static_assert(sizeof(ComposedPresenterPushConstants) == 96u);
 
 struct PrewarmedRetroArchChains
 {
@@ -238,6 +239,7 @@ bool surfaceConfigsEqual(const VulkanSurfaceConfig& left, const VulkanSurfaceCon
         && left.hybridOnTop == right.hybridOnTop
         && left.backgroundMode == right.backgroundMode
         && left.filtering == right.filtering
+        && left.lcdGridStrength == right.lcdGridStrength
         && left.retroShaderEnabled == right.retroShaderEnabled
         && left.retroShaderPresetPath == right.retroShaderPresetPath
         && left.retroShaderSourceResolution == right.retroShaderSourceResolution
@@ -1249,7 +1251,8 @@ VulkanPresentationResult VulkanSurfacePresenter::presentFrame(
         [](const auto& entry) {
             const SurfaceState& surfaceState = entry.second;
             return surfaceState.configured
-                && IsVulkanPostProcessFilter(surfaceState.config.filtering);
+                && (IsVulkanPostProcessFilter(surfaceState.config.filtering)
+                    || surfaceState.config.lcdGridStrength > 0);
         });
 
     VkSemaphore sourceReadySemaphore = VK_NULL_HANDLE;
@@ -5104,7 +5107,8 @@ bool VulkanSurfacePresenter::updateVertexBuffer(
         {
             drawMode = retroArchApplied
                 ? kDrawModeRetroArchCompositeFrame
-                : (config.filtering != VulkanFilterMode::RetroArch && IsVulkanPostProcessFilter(config.filtering)
+                : (config.filtering != VulkanFilterMode::RetroArch
+                    && (IsVulkanPostProcessFilter(config.filtering) || config.lcdGridStrength > 0)
                     ? (topScreen ? kDrawModeFilteredCompositeTop : kDrawModeFilteredCompositeBottom)
                     : kDrawModeCompositeFrame);
         }
@@ -5746,6 +5750,7 @@ bool VulkanSurfacePresenter::recordSurfaceCommands(
                     pushConstants.bottomStructuredHandoffSuppress3d,
                 .viewportWidth = pushConstants.viewportWidth,
                 .viewportHeight = pushConstants.viewportHeight,
+                .lcdGridStrength = surfaceState.config.lcdGridStrength,
             };
             vkCmdPushConstants(
                 surfaceState.commandBuffer,

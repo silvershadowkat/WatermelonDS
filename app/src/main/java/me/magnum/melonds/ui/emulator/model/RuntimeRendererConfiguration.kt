@@ -9,4 +9,5 @@ data class RuntimeRendererConfiguration(
     val videoFiltering: VideoFiltering,
     val resolutionScaling: Int,
     val retroArchShader: RetroArchShaderConfiguration,
+    val lcdGridStrength: Int = 0,
 )

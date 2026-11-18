@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string-array name="ds_lcd_grid_options">
+        <item>@string/ds_lcd_grid_off</item>
+        <item>@string/ds_lcd_grid_subtle</item>
+        <item>@string/ds_lcd_grid_medium</item>
+        <item>@string/ds_lcd_grid_strong</item>
+    </string-array>
+    <string-array name="ds_lcd_grid_values">
+        <item>0</item><item>1</item><item>2</item><item>3</item>
+    </string-array>
     <string-array name="ra_offline_backend_options">
         <item>@string/ra_offline_backend_built_in</item>
         <item>@string/ra_offline_backend_proxy</item>
